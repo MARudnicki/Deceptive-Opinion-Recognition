@@ -1,6 +1,7 @@
 package naive;
 
 import naive.classifiers.Classifier;
+import naive.exceptions.NaiveBayesException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,10 @@ public class NaiveBayersEngine {
      * @return
      */
     public Classifier predict(String sentence) {
+        if(sentence.isEmpty()){
+            throw new NaiveBayesException("Sentence cannot be empty ");
+        }
+
         List<String> list = Arrays.asList(sentence.split(" "));
         List<Classifier> listOfClassifiers =
                 list.stream()
@@ -37,12 +42,15 @@ public class NaiveBayersEngine {
 
         int recognisedWordsSize = listOfClassifiers.size();
 
+        if(recognisedWordsSize==0){
+            throw new NaiveBayesException("None of words was recognised");
+        }
+
         Map<Classifier, Long> counts =
                 listOfClassifiers.stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
-
         for (Classifier classifier : Classifier.values()) {
-            double probability = (double) counts.get(classifier) / recognisedWordsSize;
+            double probability = (double) counts.getOrDefault(classifier,0L) / recognisedWordsSize;
             System.out.println("Probability that sentence is in " + classifier + " is " + probability);
         }
 
