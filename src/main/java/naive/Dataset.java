@@ -1,8 +1,5 @@
 package naive;
 
-import naive.classifiers.Classifier;
-import naive.classifiers.ClassifierMap;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,6 +8,7 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,25 +17,35 @@ import java.util.stream.Collectors;
 /**
  * Created by Maciej Rudnicki on 01/02/2017.
  */
-public class Dataset {
+public class Dataset<T extends Enum> {
 
-    private Map<String, Map<Classifier, Integer>> dataSet = new HashMap<>();
+    private Map<String, Map<T, Integer>> dataSet = new HashMap<>();
 
-    private Map<Classifier, Integer> classifierSizes = new ClassifierMap();
+    private Map<T, Integer> classifierSizes = new HashMap<>();
 
-    public void train(Map<Classifier, URL> trainingSet) {
-        trainingSet.forEach((k, v) -> addWords(readLines(v), k));
+    private Class<T> classifier;
+
+    public Dataset(Class<T> enumClass) {
+        classifierSizes = (Map<T, Integer>) EnumSet.allOf(enumClass).stream()
+                .collect(Collectors.toMap(enumType -> enumType, enumType->0));
+        classifier = enumClass;
     }
 
-    public Map<String, Map<Classifier, Integer>> getDataSet() {
+    public void train(Map<URL, T> trainingSet) {
+        trainingSet.forEach((k, v) -> addWords(readLines(k), v));
+    }
+
+    public Map<String, Map<T, Integer>> getDataSet() {
         return dataSet;
     }
 
-    public Map<Classifier, Integer> getClassifierSizes() {
+    public Map<T, Integer> getClassifierSizes() {
         return classifierSizes;
     }
 
-
+    public Class<T> getClassifier() {
+        return classifier;
+    }
 
     private static List<String> readLines(URL url) {
         List<String> list;
@@ -55,11 +63,11 @@ public class Dataset {
         return list;
     }
 
-    private void addWords(Collection<String> words, final Classifier classifier) {
+    private void addWords(Collection<String> words, final T classifier) {
         words.forEach(word -> addSampleWord(word, classifier));
     }
 
-    private void addSampleWord(String word, Classifier classifier) {
+    private void addSampleWord(String word, T classifier) {
         if (dataSet.containsKey(word)) {
             update(word, classifier);
         } else {
@@ -67,8 +75,8 @@ public class Dataset {
         }
     }
 
-    private void update(String word, Classifier classifier) {
-        Map<Classifier, Integer> element = dataSet.get(word);
+    private void update(String word, T classifier) {
+        Map<T, Integer> element = dataSet.get(word);
 
         int oldValue = element.get(classifier);
         int newValue = oldValue + 1;
@@ -77,18 +85,16 @@ public class Dataset {
         updateClassifiersSize(classifier);
     }
 
-    private void createNew(String word, Classifier classifier) {
-        Map<Classifier, Integer> map = new HashMap<>();
+    private void createNew(String word, T classifier) {
 
-        for (Classifier c : Classifier.values()) {
-            map.put(c, 0);
-        }
+        Map<T, Integer> map = (Map<T, Integer>) EnumSet.allOf(classifier.getDeclaringClass())
+                .stream().collect(Collectors.toMap(c->c, c->0));
 
         dataSet.put(word, map);
         update(word, classifier);
     }
 
-    private void updateClassifiersSize(Classifier classifier) {
+    private void updateClassifiersSize(T classifier) {
         int oldValue = classifierSizes.get(classifier);
         int newValue = oldValue + 1;
 
