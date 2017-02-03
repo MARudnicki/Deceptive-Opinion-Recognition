@@ -20,11 +20,7 @@ import static org.junit.Assert.assertThat;
 
 public class PureNaiveBayesLanguageTest extends TestAbstract {
 
-    protected Dataset dataset;
-
-    protected Map<URL, LanguageClassifier> trainingFiles;
-
-    protected PureNaiveBayesEngine engine;
+    private Map<URL, Enum> trainingFiles;
 
     @Before
     public void prepare() {

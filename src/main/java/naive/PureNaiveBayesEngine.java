@@ -54,7 +54,7 @@ public class PureNaiveBayesEngine <T extends Enum>{
 
         EnumSet.allOf(classifierType).stream().forEach(classifier -> {
             double probability = (double) counts.getOrDefault(classifier,0L) / recognisedWordsSize;
-            System.out.println("Probability that sentence is in " + classifier + " is " + probability);
+//            System.out.println("Probability that sentence is in " + classifier + " is " + probability);
         });
 
         return counts.entrySet()
@@ -70,7 +70,7 @@ public class PureNaiveBayesEngine <T extends Enum>{
      * @return output classifierType
      */
     private T examineSimpleWord(String word) {
-        System.out.println("Examine word : " + word);
+//        System.out.println("Examine word : " + word);
 
         Map<T, Integer> wordEntry = dataSet.get(word);
         T winner=null;
@@ -82,7 +82,7 @@ public class PureNaiveBayesEngine <T extends Enum>{
                 value = (double)entry.getValue()/classifierSizes.get(entry.getKey());
             }
         }
-        System.out.println(String.join(" ","Token",word,"is",winner.toString()));
+//        System.out.println(String.join(" ","Token",word,"is",winner.toString()));
 
         return winner;
 
