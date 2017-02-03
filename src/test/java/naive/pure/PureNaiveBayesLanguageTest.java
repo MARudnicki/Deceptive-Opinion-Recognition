@@ -20,20 +20,14 @@ import static org.junit.Assert.assertThat;
 
 public class PureNaiveBayesLanguageTest extends TestAbstract {
 
-    private Map<URL, Enum> trainingFiles;
-
     @Before
-    public void prepare() {
-        trainingFiles = new HashMap<>();
-        trainingFiles.put(PureNaiveBayesLanguageTest.class.getResource("/datasets/language-recognition/training" +
-                ".language.en.txt"), LanguageClassifier.ENGLISH);
-        trainingFiles.put( PureNaiveBayesLanguageTest.class.getResource("/datasets/language-recognition/training" +
-                ".language.pl.txt"), LanguageClassifier.POLISH);
+    public void prepare() throws Exception{
 
         dataset = new Dataset(LanguageClassifier.class);
-        dataset.train(trainingFiles);
-
         engine = new PureNaiveBayesEngine(dataset);
+
+        prepareData(LanguageClassifier.ENGLISH, "/datasets/language-recognition/eng");
+        prepareData(LanguageClassifier.POLISH, "/datasets/language-recognition/pl");
 
     }
 

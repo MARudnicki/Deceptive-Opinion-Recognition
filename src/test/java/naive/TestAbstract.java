@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  */
 public class TestAbstract {
 
-    protected Dataset<Enum> dataset;
+    protected Dataset dataset;
 
     protected PureNaiveBayesEngine engine;
 

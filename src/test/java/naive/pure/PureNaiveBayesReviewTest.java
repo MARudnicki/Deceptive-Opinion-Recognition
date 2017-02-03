@@ -99,7 +99,7 @@ public class PureNaiveBayesReviewTest extends TestAbstract {
         double efficiency = (double) correctValues * 100 / allValues;
 
         System.out.println(String.join(" ",
-                "SUMMARY Correct values : ",
+                "Pure Naive Bayes predict Reviews. Correct values : ",
                 String.valueOf(correctValues),
                 " of ",
                 String.valueOf(allValues),

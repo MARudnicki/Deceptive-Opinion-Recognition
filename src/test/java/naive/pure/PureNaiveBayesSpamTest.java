@@ -119,13 +119,13 @@ public class PureNaiveBayesSpamTest extends TestAbstract {
                 .count();
         long allValuesSpam = (long) URLsSpam.entrySet().size();
 
-        System.out.println("Correct values : " + correctValuesHam + " of " + allValuesHam);
+        System.out.println("Correct values : " + correctValuesSpam + " of " + allValuesSpam);
 
         long correctValues = correctValuesHam + correctValuesSpam;
         long allValues = allValuesSpam + allValuesHam;
         double efficiency = (double) correctValues * 100 / allValues;
         System.out.println(String.join(" ",
-                "SUMMARY Correct values : ",
+                "Pure Naive Bayes predict Spam. Correct values : ",
                 String.valueOf(correctValues),
                 " of ",
                 String.valueOf(allValues),
