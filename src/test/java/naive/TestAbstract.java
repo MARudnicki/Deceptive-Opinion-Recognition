@@ -35,21 +35,7 @@ public class TestAbstract {
         return reader.lines().collect(Collectors.joining(" "));
     }
 
-    protected Map<String, LanguageClassifier> prepareSampleFiles() {
-        Map<String, LanguageClassifier> map = new HashMap<>();
-        map.put("/datasets/language-recognition/test/Polish1", LanguageClassifier.POLISH);
-        map.put("/datasets/language-recognition/test/Polish2", LanguageClassifier.POLISH);
-        map.put("/datasets/language-recognition/test/Polish3", LanguageClassifier.POLISH);
-        map.put("/datasets/language-recognition/test/Polish4", LanguageClassifier.POLISH);
-        map.put("/datasets/language-recognition/test/Polish5", LanguageClassifier.POLISH);
-        map.put("/datasets/language-recognition/test/English1", LanguageClassifier.ENGLISH);
-        map.put("/datasets/language-recognition/test/English2", LanguageClassifier.ENGLISH);
-        map.put("/datasets/language-recognition/test/English3", LanguageClassifier.ENGLISH);
-        map.put("/datasets/language-recognition/test/English4", LanguageClassifier.ENGLISH);
-        map.put("/datasets/language-recognition/test/English5", LanguageClassifier.ENGLISH);
 
-        return map;
-    }
 
     protected void prepareData(final Enum spamClassfier, String path) throws Exception {
         Map<URL, Enum> URLs = prepareMapOfUrl(path, spamClassfier);
