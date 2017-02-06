@@ -1,13 +1,13 @@
 package naive.pure;
 
 import naive.Dataset;
-import naive.PureNaiveBayesEngine;
+import naive.NaiveBayesEngine;
 import naive.TestAbstract;
 import naive.classifiers.LanguageClassifier;
+import naive.preprocessors.IgnoreCasePreprocessor;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,8 +23,11 @@ public class PureNaiveBayesLanguageTest extends TestAbstract {
     @Before
     public void prepare() throws Exception{
 
-        dataset = new Dataset(LanguageClassifier.class);
-        engine = new PureNaiveBayesEngine(dataset);
+        dataset = new Dataset.DatasetBuilder(LanguageClassifier.class)
+                .with(new IgnoreCasePreprocessor())
+                .build();
+
+        engine = new NaiveBayesEngine(dataset);
 
         prepareData(LanguageClassifier.ENGLISH, "/datasets/language-recognition/eng");
         prepareData(LanguageClassifier.POLISH, "/datasets/language-recognition/pl");

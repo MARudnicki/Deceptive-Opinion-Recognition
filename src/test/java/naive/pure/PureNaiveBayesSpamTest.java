@@ -1,7 +1,7 @@
 package naive.pure;
 
 import naive.Dataset;
-import naive.PureNaiveBayesEngine;
+import naive.NaiveBayesEngine;
 import naive.TestAbstract;
 import naive.classifiers.SpamClassfier;
 import org.junit.Before;
@@ -21,8 +21,8 @@ public class PureNaiveBayesSpamTest extends TestAbstract {
 
     @Before
     public void prepare() throws Exception {
-        dataset = new Dataset(SpamClassfier.class);
-        engine = new PureNaiveBayesEngine(dataset);
+        dataset = new Dataset.DatasetBuilder(SpamClassfier.class).build();
+        engine = new NaiveBayesEngine(dataset);
         prepareSpam();
         prepareHam();
     }

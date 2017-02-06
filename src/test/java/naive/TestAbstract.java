@@ -1,7 +1,5 @@
 package naive;
 
-import naive.classifiers.LanguageClassifier;
-import naive.classifiers.SpamClassfier;
 import naive.pure.PureNaiveBayesLanguageTest;
 import naive.pure.PureNaiveBayesSpamTest;
 
@@ -15,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -26,7 +23,7 @@ public class TestAbstract {
 
     protected Dataset dataset;
 
-    protected PureNaiveBayesEngine engine;
+    protected NaiveBayesEngine engine;
 
     protected String loadFile(String resourcePath) {
         InputStream stream = PureNaiveBayesLanguageTest.class.getResourceAsStream(resourcePath);

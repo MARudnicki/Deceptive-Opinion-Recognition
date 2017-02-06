@@ -2,6 +2,7 @@ package naive;
 
 import naive.exceptions.NaiveBayesException;
 
+import javax.xml.crypto.Data;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Maciej Rudnicki on 02/02/2017.
  */
-public class PureNaiveBayesEngine <T extends Enum>{
+public class NaiveBayesEngine<T extends Enum>{
 
     private Map<String, Map<T, Integer>> dataSet;
 
@@ -19,10 +20,13 @@ public class PureNaiveBayesEngine <T extends Enum>{
 
     private Class<T> classifierType;
 
-    public PureNaiveBayesEngine(Dataset dataset) {
+    private Dataset dataset;
+
+    public NaiveBayesEngine(Dataset dataset) {
         this.dataSet = dataset.getDataSet();
         this.classifierSizes = dataset.getClassifierSizes();
         this.classifierType = dataset.getClassifier();
+        this.dataset = dataset;
     }
 
     /**
@@ -36,9 +40,10 @@ public class PureNaiveBayesEngine <T extends Enum>{
             throw new NaiveBayesException("Sentence cannot be empty ");
         }
 
-        List<String> list = Arrays.asList(sentence.split(" "));
+        sentence = dataset.preprocess(sentence);
+
         List<T> listOfClassifiers =
-                list.stream()
+                Arrays.stream(sentence.split(" "))
                         .filter(word -> dataSet.containsKey(word))
                         .map(this::examineSimpleWord)
                         .collect(Collectors.toList());

@@ -1,11 +1,14 @@
 package naive;
 
+import naive.preprocessors.Preprocessor;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -25,16 +28,21 @@ public class Dataset<T extends Enum> {
 
     private Class<T> classifier;
 
-    public Dataset(Class<T> enumClass) {
+    private List<Preprocessor> preprocessors;
 
-        classifierSizes = (Map<Enum, Integer>) EnumSet.allOf(enumClass).stream()
-                .collect(Collectors.toMap(enumType -> enumType, enumType->0));
-        classifier = enumClass;
+    public Dataset(DatasetBuilder builder) {
+
+        classifierSizes = builder.classifierSizesBuilder;
+        classifier = builder.classifierBuilder;
+        preprocessors = builder.preprocessorsBuilder;
     }
 
     public void train(Map<URL, Enum> trainingSet) {
-        trainingSet.forEach((k, v) -> addWords(readLines(k), v));
+
+        trainingSet.forEach((k, v) -> addWords(processURL(k), v));
     }
+
+
 
     public Map<String, Map<Enum, Integer>> getDataSet() {
         return dataSet;
@@ -48,20 +56,33 @@ public class Dataset<T extends Enum> {
         return classifier;
     }
 
-    private static List<String> readLines(URL url) {
-        List<String> list;
+    private static String readSentence(URL url) {
         try {
             URLConnection conn = url.openConnection();
             BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-            list = reader
+            return reader
                     .lines()
                     .flatMap(line -> Arrays.stream(line.split(" ")))
-                    .collect(Collectors.toList());
+                    .collect(Collectors.joining(" "));
 
         } catch (IOException e) {
             throw new RuntimeException("Cannot read from url, " + url.getPath());
         }
-        return list;
+    }
+
+    public String preprocess(String sentence){
+        for(Preprocessor p : preprocessors){
+            sentence = p.process(sentence);
+        }
+        return sentence;
+    }
+
+    private Collection<String> processURL(URL url){
+        String sentence = readSentence(url);
+
+        sentence = preprocess(sentence);
+
+        return Arrays.asList(sentence.split(" "));
     }
 
     private void addWords(Collection<String> words, final Enum classifier) {
@@ -100,5 +121,28 @@ public class Dataset<T extends Enum> {
         int newValue = oldValue + 1;
 
         classifierSizes.put(classifier, newValue);
+    }
+
+    public static class DatasetBuilder{
+
+        private Map<Enum, Integer> classifierSizesBuilder;
+
+        private Class classifierBuilder;
+
+        private List<Preprocessor> preprocessorsBuilder = new ArrayList<>();
+
+        public DatasetBuilder(Class enumClass) {
+            this.classifierSizesBuilder = (Map<Enum, Integer>) EnumSet.allOf(enumClass).stream()
+                    .collect(Collectors.toMap(enumType -> enumType, enumType->0));
+            this.classifierBuilder = enumClass;
+        }
+
+        public DatasetBuilder with(Preprocessor preprocessor){
+            preprocessorsBuilder.add(preprocessor);
+            return this;
+        }
+        public Dataset build(){
+            return new Dataset(this);
+        }
     }
 }

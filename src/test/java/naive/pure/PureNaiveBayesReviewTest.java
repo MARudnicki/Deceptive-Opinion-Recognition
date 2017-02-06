@@ -1,7 +1,7 @@
 package naive.pure;
 
 import naive.Dataset;
-import naive.PureNaiveBayesEngine;
+import naive.NaiveBayesEngine;
 import naive.TestAbstract;
 import naive.classifiers.ReviewClassfier;
 import org.junit.Before;
@@ -19,8 +19,8 @@ public class PureNaiveBayesReviewTest extends TestAbstract {
 
     @Before
     public void prepare() throws Exception {
-        dataset = new Dataset(ReviewClassfier.class);
-        engine = new PureNaiveBayesEngine(dataset);
+        dataset = new Dataset.DatasetBuilder(ReviewClassfier.class).build();
+        engine = new NaiveBayesEngine(dataset);
 
         prepareDeceptiveReviewsNegative();
         prepateDeceptiveReviewsPositive();
