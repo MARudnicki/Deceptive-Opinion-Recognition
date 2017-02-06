@@ -1,11 +1,9 @@
 package naive.pure;
 
-import naive.Dataset;
 import naive.DatasetFactory;
 import naive.NaiveBayesEngine;
 import naive.TestAbstract;
 import naive.classifiers.LanguageClassifier;
-import naive.preprocessors.IgnoreCasePreprocessor;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,15 +20,16 @@ import static org.junit.Assert.assertThat;
 public class LanguageTest extends TestAbstract {
 
     @Before
-    public void prepare() throws Exception{
-
+    public void prepare() throws Exception {
+        data = new HashMap<>();
         dataset = DatasetFactory.getDataset(LanguageClassifier.class);
 
-        prepareData(LanguageClassifier.ENGLISH, "/datasets/language-recognition/eng");
-        prepareData(LanguageClassifier.POLISH, "/datasets/language-recognition/pl");
+        data.putAll(prepareData(LanguageClassifier.ENGLISH, "/datasets/language-recognition/eng"));
+        data.putAll(prepareData(LanguageClassifier.POLISH, "/datasets/language-recognition/pl"));
 
         engine = new NaiveBayesEngine(dataset);
 
+        dataset.train(data);
     }
 
     @Test
@@ -56,7 +55,6 @@ public class LanguageTest extends TestAbstract {
 
 //        assertThat(correctValues, is(allValues));
     }
-
 
 
 }

@@ -1,5 +1,6 @@
 package naive;
 
+import javafx.util.Pair;
 import naive.classifiers.LanguageClassifier;
 import naive.classifiers.ReviewClassfier;
 import naive.classifiers.SpamClassfier;
@@ -16,8 +17,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -25,9 +29,35 @@ import java.util.stream.Collectors;
  */
 public class TestAbstract {
 
+    protected Random random = new SecureRandom();
+
+    protected static final double VALIDATION_SIZE_PERCENT = 20;
+
+    protected static final int NMBER_OF_TEST_RUNS = 10;
+
     protected Dataset dataset;
 
     protected NaiveBayesEngine engine;
+
+    protected Map<URL, Enum> data;
+
+    protected Pair<Map<URL,Enum>,Map<URL,Enum>> splitDataIntoTrainingAndVerificationSet(Map<URL, Enum> data){
+
+        Map<URL, Enum> veryficationSet = new HashMap<>();
+        Map<URL, Enum> trainingSet = new HashMap<>(data);
+
+        long validationSize = Math.round(data.size()*VALIDATION_SIZE_PERCENT/100);
+
+        for(int i = 0; i<validationSize; i++) {
+            ArrayList<URL> keys = new ArrayList(trainingSet.keySet());
+
+            URL randomKey = keys.get(random.nextInt(keys.size()));
+
+            veryficationSet.put(randomKey, trainingSet.get(randomKey));
+            trainingSet.remove(randomKey);
+        }
+        return new Pair<>(trainingSet, veryficationSet);
+    }
 
     protected String loadFile(String resourcePath) {
         InputStream stream = LanguageTest.class.getResourceAsStream(resourcePath);
@@ -37,11 +67,8 @@ public class TestAbstract {
     }
 
 
-
-    protected void prepareData(final Enum spamClassfier, String path) throws Exception {
-        Map<URL, Enum> URLs = prepareMapOfUrl(path, spamClassfier);
-
-        dataset.train(URLs);
+    protected Map<URL, Enum> prepareData(final Enum spamClassfier, String path) throws Exception {
+        return prepareMapOfUrl(path, spamClassfier);
     }
 
 
@@ -71,7 +98,6 @@ public class TestAbstract {
     }
 
 
-
     protected Map<String, LanguageClassifier> prepareLanguageSampleFiles() {
         Map<String, LanguageClassifier> map = new HashMap<>();
         map.put("/datasets/language-recognition/test/Polish1", LanguageClassifier.POLISH);
@@ -88,57 +114,76 @@ public class TestAbstract {
         return map;
     }
 
-    protected void prepareSpam() throws Exception {
-        prepareData(SpamClassfier.SPAM, "/datasets/spam-recognition/training-set/spam");
+    protected Map<URL, Enum> prepareSpam() throws Exception {
+        return prepareMapOfUrl("/datasets/spam-recognition/training-set/spam", SpamClassfier.SPAM);
     }
 
-    protected void prepareHam() throws Exception {
-        prepareData(SpamClassfier.NOT_SPAM, "/datasets/spam-recognition/training-set/ham");
+    protected Map<URL, Enum> prepareHam() throws Exception {
+        return prepareMapOfUrl("/datasets/spam-recognition/training-set/ham", SpamClassfier.NOT_SPAM);
     }
 
-    protected void prepareThuthfullReviewsPositive() throws Exception {
+    protected Map<URL, Enum> prepareThuthfullReviewsPositive() throws Exception {
+        Map<URL, Enum> map = new HashMap<>();
 
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold1");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold2");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold3");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold4");
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold1",ReviewClassfier.TRUTHFULL));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold2",ReviewClassfier.TRUTHFULL));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold3",ReviewClassfier.TRUTHFULL));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold4",ReviewClassfier.TRUTHFULL));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold5",ReviewClassfier.TRUTHFULL));
+        return map;
     }
 
-    protected void prepareThuthfullReviewsNegative() throws Exception {
+    protected Map<URL, Enum>  prepareThuthfullReviewsNegative() throws Exception {
+        Map<URL, Enum> map = new HashMap<>();
 
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold1");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold2");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold3");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold4");
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold1",ReviewClassfier.TRUTHFULL));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold2",ReviewClassfier.TRUTHFULL));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold3",ReviewClassfier.TRUTHFULL));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold4",ReviewClassfier.TRUTHFULL));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold5",ReviewClassfier.TRUTHFULL));
+
+        return map;
     }
 
-    protected void prepateDeceptiveReviewsPositive() throws Exception {
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold1");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold2");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold3");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold4");
+    protected Map<URL, Enum>  prepateDeceptiveReviewsPositive() throws Exception {
+        Map<URL, Enum> map = new HashMap<>();
+
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold1",ReviewClassfier.DECEPTIVE));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold2",ReviewClassfier.DECEPTIVE));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold3",ReviewClassfier.DECEPTIVE));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold4",ReviewClassfier.DECEPTIVE));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold5",ReviewClassfier.DECEPTIVE));
+        return map;
     }
 
-    protected void prepareDeceptiveReviewsNegative() throws Exception {
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold1");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold2");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold3");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold4");
+    protected Map<URL, Enum>  prepareDeceptiveReviewsNegative() throws Exception {
+        Map<URL, Enum> map = new HashMap<>();
+
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold1", ReviewClassfier.DECEPTIVE));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold2",ReviewClassfier.DECEPTIVE));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold3",ReviewClassfier.DECEPTIVE));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold4",ReviewClassfier.DECEPTIVE));
+        map.putAll(prepareMapOfUrl(
+                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold5",ReviewClassfier.DECEPTIVE));
+        return map;
     }
 }

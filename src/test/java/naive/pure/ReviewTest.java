@@ -1,5 +1,6 @@
 package naive.pure;
 
+import javafx.util.Pair;
 import naive.DatasetFactory;
 import naive.NaiveBayesEngine;
 import naive.TestAbstract;
@@ -8,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
@@ -17,94 +19,54 @@ import static org.junit.Assert.assertTrue;
  */
 public class ReviewTest extends TestAbstract {
 
-    @Before
-    public void prepare() throws Exception {
+    @Test
+    public void runReviewTest() throws Exception{
+        long summaryCorrectAnswers = 0;
+        long summaryRecords = 0;
+
+        for(int i=0 ; i< NMBER_OF_TEST_RUNS; i++){
+            Pair<Long, Long> pair = singleRun();
+
+            summaryCorrectAnswers += pair.getKey();
+            summaryRecords += pair.getValue();
+
+            System.out.println(String.join(" ", "Loop nr",String.valueOf(i+1),
+                    "Reviews correct answers :",String.valueOf(pair.getKey()),
+                    "on ",String.valueOf(pair.getValue())));
+        }
+
+        System.out.println(String.join(" ","Reviews. Summary efficiency is ",
+                String.valueOf((double)summaryCorrectAnswers*100/summaryRecords),"%"));
+
+    }
+
+    private Pair<Long, Long> singleRun() throws Exception{
         dataset = DatasetFactory.getDataset(ReviewClassfier.class);
-
-        prepareDeceptiveReviewsNegative();
-        prepateDeceptiveReviewsPositive();
-        prepareThuthfullReviewsNegative();
-        prepareThuthfullReviewsPositive();
-
         engine = new NaiveBayesEngine(dataset);
 
+        data = new HashMap<>();
+
+        data.putAll(prepareDeceptiveReviewsNegative());
+        data.putAll(prepateDeceptiveReviewsPositive());
+        data.putAll(prepareThuthfullReviewsNegative());
+        data.putAll(prepareThuthfullReviewsPositive());
+
+        Pair<
+                Map<URL,Enum>,
+                Map<URL,Enum>
+                > pair = splitDataIntoTrainingAndVerificationSet(data);
+
+        Map<URL, Enum> trainingSet = pair.getKey();
+        Map<URL, Enum> verificationSet = pair.getValue();
+
+        dataset.train(trainingSet);
+
+        long correctValues = verificationSet.entrySet().stream()
+                .filter(this::isPredictionCorrect)
+                .count();
+        long allValues = (long) verificationSet.entrySet().size();
+
+        return new Pair<>(correctValues, allValues);
     }
-
-    @Test
-    public void deceptiveReviewsRecognition() throws Exception {
-
-        Map<URL, Enum> truthfullReviewsPositive = prepareMapOfUrl
-                ("/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold5",
-                        ReviewClassfier.TRUTHFULL);
-
-        long correctValuesTruthfullReviewsPositive = truthfullReviewsPositive.entrySet().stream()
-                .filter(this::isPredictionCorrect)
-                .count();
-        long allValuesTruthfullReviewsPositive = (long) truthfullReviewsPositive.entrySet().size();
-
-        System.out.println("Correct values : " + correctValuesTruthfullReviewsPositive + " of " + allValuesTruthfullReviewsPositive);
-
-
-        Map<URL, Enum> truthfullReviewsNegative = prepareMapOfUrl
-                ("/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold5",
-                        ReviewClassfier.TRUTHFULL);
-
-        long correctValuesTruthfullReviewsNegative = truthfullReviewsNegative.entrySet().stream()
-                .filter(this::isPredictionCorrect)
-                .count();
-        long allValuesTruthfullReviewsNegative = (long) truthfullReviewsNegative.entrySet().size();
-
-        System.out.println("Correct values : " + correctValuesTruthfullReviewsNegative + " of " + allValuesTruthfullReviewsNegative);
-
-
-        Map<URL, Enum> deceptiveReviewsPositive = prepareMapOfUrl
-                ("/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold5",
-                        ReviewClassfier.DECEPTIVE);
-
-        long correctValuesDeceptiveReviewsPositive = deceptiveReviewsPositive.entrySet().stream()
-                .filter(this::isPredictionCorrect)
-                .count();
-        long allValuesDeceptiveReviewsPositive = (long) deceptiveReviewsPositive.entrySet().size();
-
-        System.out.println("Correct values : " + correctValuesDeceptiveReviewsPositive + " of " + allValuesDeceptiveReviewsPositive);
-
-
-        Map<URL, Enum> deceptiveReviewsNegative = prepareMapOfUrl
-                ("/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold5",
-                        ReviewClassfier.DECEPTIVE);
-
-        long correctValuesDeceptiveReviewsNegative = deceptiveReviewsNegative.entrySet().stream()
-                .filter(this::isPredictionCorrect)
-                .count();
-        long allValuesDeceptiveReviewsNegative = (long) deceptiveReviewsNegative.entrySet().size();
-
-        System.out.println("Correct values : " + correctValuesDeceptiveReviewsNegative + " of " + allValuesDeceptiveReviewsNegative);
-
-
-        long correctValues =
-                correctValuesTruthfullReviewsPositive
-                        + correctValuesTruthfullReviewsNegative
-                        + correctValuesDeceptiveReviewsPositive
-                        + correctValuesDeceptiveReviewsNegative;
-        long allValues =
-                allValuesTruthfullReviewsPositive
-                        + allValuesTruthfullReviewsNegative
-                        + allValuesDeceptiveReviewsPositive
-                        + allValuesDeceptiveReviewsNegative;
-
-        double efficiency = (double) correctValues * 100 / allValues;
-
-        System.out.println(String.join(" ",
-                "Pure Naive Bayes predict Reviews. Correct values : ",
-                String.valueOf(correctValues),
-                " of ",
-                String.valueOf(allValues),
-                "what gives",
-                String.valueOf(efficiency),
-                "% efficiency"));
-
-        assertTrue(efficiency > 54);
-    }
-
 
 }

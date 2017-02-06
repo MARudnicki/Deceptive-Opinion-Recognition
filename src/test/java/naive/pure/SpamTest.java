@@ -1,17 +1,18 @@
 package naive.pure;
 
+import javafx.util.Pair;
 import naive.DatasetFactory;
 import naive.NaiveBayesEngine;
 import naive.TestAbstract;
 import naive.classifiers.SpamClassfier;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URL;
+import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -22,65 +23,51 @@ import static org.junit.Assert.assertTrue;
  */
 public class SpamTest extends TestAbstract {
 
-    @Before
-    public void prepare() throws Exception {
-        dataset = DatasetFactory.getDataset(SpamClassfier.class);
+    @Test
+    public void runSpamTest() throws Exception{
+        long summaryCorrectAnswers = 0;
+        long summaryRecords = 0;
 
+        for(int i=0 ; i< NMBER_OF_TEST_RUNS; i++){
+            Pair<Long, Long> pair = singleRun();
+
+            summaryCorrectAnswers += pair.getKey();
+            summaryRecords += pair.getValue();
+
+            System.out.println(String.join(" ", "Loop nr",String.valueOf(i+1),
+                    "Spam correct answers :",String.valueOf(pair.getKey()),
+                    "on ",String.valueOf(pair.getValue())));
+        }
+
+        System.out.println(String.join(" ","Spam. Summary efficiency is ",
+                String.valueOf((double)summaryCorrectAnswers*100/summaryRecords),"%"));
+
+    }
+
+    protected Pair<Long, Long> singleRun() throws Exception{
+
+        dataset = DatasetFactory.getDataset(SpamClassfier.class);
         engine = new NaiveBayesEngine(dataset);
 
-        prepareSpam();
-        prepareHam();
-    }
+        data = new HashMap<>();
+        data.putAll(prepareSpam());
+        data.putAll(prepareHam());
 
+        Pair<
+                Map<URL,Enum>,
+                Map<URL,Enum>
+                > pair = splitDataIntoTrainingAndVerificationSet(data);
 
-    @Test
-    public void spamRecognition() throws Exception{
-        List<Double> efficiency = new ArrayList<>();
+        Map<URL, Enum> trainingSet = pair.getKey();
+        Map<URL, Enum> verificationSet = pair.getValue();
 
-    }
+        dataset.train(trainingSet);
 
-
-    private double calculateEfficiency() throws Exception {
-        Map<URL, Enum> URLsHam = prepareMapOfUrl("/datasets/spam-recognition/veryfication-set/ham",
-                SpamClassfier.NOT_SPAM);
-        return 0;
-    }
-
-    @Test
-    public void spamRecognition2() throws Exception {
-
-        Map<URL, Enum> URLsHam = prepareMapOfUrl("/datasets/spam-recognition/veryfication-set/ham",
-                SpamClassfier.NOT_SPAM);
-
-        long correctValuesHam = URLsHam.entrySet().stream()
+        long correctValues = verificationSet.entrySet().stream()
                 .filter(this::isPredictionCorrect)
                 .count();
-        long allValuesHam = (long) URLsHam.entrySet().size();
+        long allValues = (long) verificationSet.entrySet().size();
 
-        System.out.println("Correct values : " + correctValuesHam + " of " + allValuesHam);
-
-        Map<URL, Enum> URLsSpam = prepareMapOfUrl("/datasets/spam-recognition/veryfication-set/spam",
-                SpamClassfier.SPAM);
-
-        long correctValuesSpam = URLsSpam.entrySet().stream()
-                .filter(this::isPredictionCorrect)
-                .count();
-        long allValuesSpam = (long) URLsSpam.entrySet().size();
-
-        System.out.println("Correct values : " + correctValuesSpam + " of " + allValuesSpam);
-
-        long correctValues = correctValuesHam + correctValuesSpam;
-        long allValues = allValuesSpam + allValuesHam;
-        double efficiency = (double) correctValues * 100 / allValues;
-        System.out.println(String.join(" ",
-                "Pure Naive Bayes predict Spam. Correct values : ",
-                String.valueOf(correctValues),
-                " of ",
-                String.valueOf(allValues),
-                "what gives",
-                String.valueOf(efficiency),
-                "% efficiency"));
-
-        assertTrue(efficiency > 85);
+        return new Pair<>(correctValues, allValues);
     }
 }
