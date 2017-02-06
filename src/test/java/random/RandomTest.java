@@ -1,10 +1,9 @@
 package random;
 
+import naive.preprocessors.RemoveSpecialCharsPreprocessor;
 import org.junit.Test;
 
 import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -17,14 +16,9 @@ public class RandomTest {
     @Test
     public void myRandomTest(){
 
-        Map<Integer, String > map = new HashMap<>();
+        String a = "ala\n12{3()k?ota!";
 
-        map.put(1,"a");
-        map.put(2,"b");
-        map.put(3,"c");
-        map.put(4,"d");
-        map.put(5,"e");
-
+        System.out.println(new RemoveSpecialCharsPreprocessor().process(a));
 
     }
 

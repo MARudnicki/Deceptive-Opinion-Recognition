@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 /**
  * Created by Maciej Rudnicki on 01/02/2017.
  */
@@ -82,7 +84,7 @@ public class Dataset<T extends Enum> {
 
         sentence = preprocess(sentence);
 
-        return Arrays.asList(sentence.split(" "));
+        return Arrays.stream(sentence.split(" ")).map(String::trim).collect(toList());
     }
 
     private void addWords(Collection<String> words, final Enum classifier) {
