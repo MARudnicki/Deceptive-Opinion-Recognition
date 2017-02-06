@@ -4,6 +4,7 @@ import naive.preprocessors.RemoveSpecialCharsPreprocessor;
 import org.junit.Test;
 
 import java.security.SecureRandom;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -18,7 +19,7 @@ public class RandomTest {
 
         String a = "ala\n12{3()k?ota!";
 
-        System.out.println(new RemoveSpecialCharsPreprocessor().process(a));
+        System.out.println(Math.pow(3,2));
 
     }
 

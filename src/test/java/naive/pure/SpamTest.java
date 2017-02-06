@@ -1,19 +1,18 @@
 package naive.pure;
 
 import javafx.util.Pair;
-import naive.DatasetFactory;
+import naive.ComponentFactory;
 import naive.NaiveBayesEngine;
 import naive.TestAbstract;
 import naive.classifiers.SpamClassfier;
 import org.junit.Test;
 
 import java.net.URL;
-import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
+import static naive.ComponentFactory.getDataset;
+import static naive.ComponentFactory.getEngine;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -46,8 +45,8 @@ public class SpamTest extends TestAbstract {
 
     protected Pair<Long, Long> singleRun() throws Exception{
 
-        dataset = DatasetFactory.getDataset(SpamClassfier.class);
-        engine = new NaiveBayesEngine(dataset);
+        dataset = getDataset(SpamClassfier.class);
+        engine = getEngine(dataset);
 
         data = new HashMap<>();
         data.putAll(prepareSpam());

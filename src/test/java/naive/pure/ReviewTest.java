@@ -1,17 +1,18 @@
 package naive.pure;
 
 import javafx.util.Pair;
-import naive.DatasetFactory;
+import naive.ComponentFactory;
 import naive.NaiveBayesEngine;
 import naive.TestAbstract;
 import naive.classifiers.ReviewClassfier;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import static naive.ComponentFactory.getDataset;
+import static naive.ComponentFactory.getEngine;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -41,8 +42,8 @@ public class ReviewTest extends TestAbstract {
     }
 
     private Pair<Long, Long> singleRun() throws Exception{
-        dataset = DatasetFactory.getDataset(ReviewClassfier.class);
-        engine = new NaiveBayesEngine(dataset);
+        dataset = getDataset(ReviewClassfier.class);
+        engine = getEngine(dataset);
 
         data = new HashMap<>();
 

@@ -1,10 +1,13 @@
 package naive;
 
+import javafx.util.Pair;
 import naive.exceptions.NaiveBayesException;
+import naive.kernels.Kernel;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import javax.xml.crypto.Data;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -12,15 +15,17 @@ import java.util.stream.Collectors;
 /**
  * Created by Maciej Rudnicki on 02/02/2017.
  */
-public class NaiveBayesEngine<T extends Enum>{
+public class NaiveBayesEngine<T extends Enum> {
 
-    private Map<String, Map<T, Integer>> dataSet;
+    private Map<String, Map<Enum, Integer>> dataSet;
 
     private Map<T, Integer> classifierSizes;
 
     private Class<T> classifierType;
 
     private Dataset dataset;
+
+    private Kernel kernel;
 
     public NaiveBayesEngine(Dataset dataset) {
         this.dataSet = dataset.getDataSet();
@@ -29,68 +34,81 @@ public class NaiveBayesEngine<T extends Enum>{
         this.dataset = dataset;
     }
 
+    public NaiveBayesEngine with(Kernel kernel) {
+        if (this.kernel != null) {
+            throw new NaiveBayesException("Only one kernel is allowed !");
+        }
+        this.kernel = kernel;
+        return this;
+    }
+
     /**
      * Examine sentence word after word with probabilities.
      *
      * @param sentence
      * @return predicted T
      */
-    public T predict(String sentence) {
-        if(sentence.isEmpty()){
+    public Enum predict(String sentence) {
+        if (sentence.isEmpty()) {
             throw new NaiveBayesException("Sentence cannot be empty ");
+        }
+        if (kernel == null) {
+            throw new NaiveBayesException("Kernel is null ");
         }
 
         sentence = dataset.preprocess(sentence);
 
-        List<T> listOfClassifiers =
+        List<String> listOfTokens =
                 Arrays.stream(sentence.split(" "))
                         .filter(word -> dataSet.containsKey(word))
-                        .map(this::examineSimpleWord)
                         .collect(Collectors.toList());
 
-        int recognisedWordsSize = listOfClassifiers.size();
-
-        if(recognisedWordsSize==0){
+        if (listOfTokens.size() == 0) {
             throw new NaiveBayesException("None of words were recognised ");
         }
 
-        Map<T, Long> counts =
-                listOfClassifiers.stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+        List<Pair<String,Map<Enum,Double>>> wordsWithClassifierProbabilities = calculateWords(listOfTokens);
 
-        EnumSet.allOf(classifierType).stream().forEach(classifier -> {
-            double probability = (double) counts.getOrDefault(classifier,0L) / recognisedWordsSize;
-//            System.out.println("Probability that sentence is in " + classifier + " is " + probability);
-        });
+        Map<Enum, Double> results = new HashMap<>();
 
-        return counts.entrySet()
+        for (Object object : EnumSet.allOf(classifierType)) {
+            Enum classifier = (Enum)object;
+            results.put(
+                    classifier,
+                    wordsWithClassifierProbabilities.stream()
+                        .map(entry -> entry.getValue().get(classifier))
+                        .mapToDouble(d->d)
+                        .sum());
+        }
+
+        return results.entrySet()
                 .stream()
                 .max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1)
                 .get()
                 .getKey();
     }
 
-    /**
-     * examine sample word
-     * @param word to examine
-     * @return output classifierType
-     */
-    private T examineSimpleWord(String word) {
-//        System.out.println("Examine word : " + word);
 
-        Map<T, Integer> wordEntry = dataSet.get(word);
-        T winner=null;
-        double value = 0;
+    private List<Pair<String, Map<Enum, Double>>> calculateWords(List<String> words) {
+        return words.stream().map(word -> new Pair<>(word, calculateSingleWord(word))).collect(Collectors
+                .toList());
 
-        for(Map.Entry<T, Integer> entry : wordEntry.entrySet()){
-            if(winner==null || (double)entry.getValue() / classifierSizes.get(entry.getKey()) > value){
-                winner = entry.getKey();
-                value = (double)entry.getValue()/classifierSizes.get(entry.getKey());
-            }
-        }
-//        System.out.println(String.join(" ","Token",word,"is",winner.toString()));
+    }
 
-        return winner;
+    private Map<Enum, Double> calculateSingleWord(String word) {
+        Map<Enum, Integer> occurences = dataSet.get(word);
 
+        double probabilitySummarized = occurences.entrySet().stream()
+                .map((entry -> (double) entry.getValue() / classifierSizes.get(entry.getKey())))
+                .mapToDouble(d -> d)
+                .sum();
+
+        Map<Enum, Double> probabilities = new HashMap<>();
+
+        occurences.forEach((k, v) -> probabilities.put(k,
+                kernel.predict(((double) v / classifierSizes.get(k)) / probabilitySummarized)));
+
+        return probabilities;
     }
 
 }

@@ -1,6 +1,6 @@
 package naive.pure;
 
-import naive.DatasetFactory;
+import naive.ComponentFactory;
 import naive.NaiveBayesEngine;
 import naive.TestAbstract;
 import naive.classifiers.LanguageClassifier;
@@ -10,6 +10,8 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
+import static naive.ComponentFactory.getDataset;
+import static naive.ComponentFactory.getEngine;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
@@ -22,12 +24,13 @@ public class LanguageTest extends TestAbstract {
     @Before
     public void prepare() throws Exception {
         data = new HashMap<>();
-        dataset = DatasetFactory.getDataset(LanguageClassifier.class);
+
+        dataset = getDataset(LanguageClassifier.class);
 
         data.putAll(prepareData(LanguageClassifier.ENGLISH, "/datasets/language-recognition/eng"));
         data.putAll(prepareData(LanguageClassifier.POLISH, "/datasets/language-recognition/pl"));
 
-        engine = new NaiveBayesEngine(dataset);
+        engine = getEngine(dataset);
 
         dataset.train(data);
     }
@@ -53,7 +56,6 @@ public class LanguageTest extends TestAbstract {
 
         System.out.println(String.join(" ", "Pure Naive Bayes predict language in", String.valueOf(correctValues), " on ", String.valueOf(allValues)));
 
-//        assertThat(correctValues, is(allValues));
     }
 
 
