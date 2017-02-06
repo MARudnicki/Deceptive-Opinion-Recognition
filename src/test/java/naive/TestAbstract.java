@@ -1,7 +1,10 @@
 package naive;
 
-import naive.pure.PureNaiveBayesLanguageTest;
-import naive.pure.PureNaiveBayesSpamTest;
+import naive.classifiers.LanguageClassifier;
+import naive.classifiers.ReviewClassfier;
+import naive.classifiers.SpamClassfier;
+import naive.pure.LanguageTest;
+import naive.pure.SpamTest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -26,7 +30,7 @@ public class TestAbstract {
     protected NaiveBayesEngine engine;
 
     protected String loadFile(String resourcePath) {
-        InputStream stream = PureNaiveBayesLanguageTest.class.getResourceAsStream(resourcePath);
+        InputStream stream = LanguageTest.class.getResourceAsStream(resourcePath);
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
 
         return reader.lines().collect(Collectors.joining(" "));
@@ -50,7 +54,7 @@ public class TestAbstract {
                 .filter(Files::isRegularFile)
                 .map(Path::toString)
                 .map(this::pathToResource)
-                .map(PureNaiveBayesSpamTest.class::getResource)
+                .map(SpamTest.class::getResource)
                 .collect(Collectors.toMap(URL -> URL, URL -> spamClassfier));
     }
 
@@ -64,5 +68,77 @@ public class TestAbstract {
 
     protected String pathToResource(String fullPath) {
         return fullPath.substring(fullPath.lastIndexOf("target/classes") + 14);
+    }
+
+
+
+    protected Map<String, LanguageClassifier> prepareLanguageSampleFiles() {
+        Map<String, LanguageClassifier> map = new HashMap<>();
+        map.put("/datasets/language-recognition/test/Polish1", LanguageClassifier.POLISH);
+        map.put("/datasets/language-recognition/test/Polish2", LanguageClassifier.POLISH);
+        map.put("/datasets/language-recognition/test/Polish3", LanguageClassifier.POLISH);
+        map.put("/datasets/language-recognition/test/Polish4", LanguageClassifier.POLISH);
+        map.put("/datasets/language-recognition/test/Polish5", LanguageClassifier.POLISH);
+        map.put("/datasets/language-recognition/test/English1", LanguageClassifier.ENGLISH);
+        map.put("/datasets/language-recognition/test/English2", LanguageClassifier.ENGLISH);
+        map.put("/datasets/language-recognition/test/English3", LanguageClassifier.ENGLISH);
+        map.put("/datasets/language-recognition/test/English4", LanguageClassifier.ENGLISH);
+        map.put("/datasets/language-recognition/test/English5", LanguageClassifier.ENGLISH);
+
+        return map;
+    }
+
+    protected void prepareSpam() throws Exception {
+        prepareData(SpamClassfier.SPAM, "/datasets/spam-recognition/training-set/spam");
+    }
+
+    protected void prepareHam() throws Exception {
+        prepareData(SpamClassfier.NOT_SPAM, "/datasets/spam-recognition/training-set/ham");
+    }
+
+    protected void prepareThuthfullReviewsPositive() throws Exception {
+
+        prepareData(ReviewClassfier.TRUTHFULL,
+                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold1");
+        prepareData(ReviewClassfier.TRUTHFULL,
+                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold2");
+        prepareData(ReviewClassfier.TRUTHFULL,
+                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold3");
+        prepareData(ReviewClassfier.TRUTHFULL,
+                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold4");
+    }
+
+    protected void prepareThuthfullReviewsNegative() throws Exception {
+
+        prepareData(ReviewClassfier.TRUTHFULL,
+                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold1");
+        prepareData(ReviewClassfier.TRUTHFULL,
+                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold2");
+        prepareData(ReviewClassfier.TRUTHFULL,
+                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold3");
+        prepareData(ReviewClassfier.TRUTHFULL,
+                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold4");
+    }
+
+    protected void prepateDeceptiveReviewsPositive() throws Exception {
+        prepareData(ReviewClassfier.DECEPTIVE,
+                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold1");
+        prepareData(ReviewClassfier.DECEPTIVE,
+                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold2");
+        prepareData(ReviewClassfier.DECEPTIVE,
+                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold3");
+        prepareData(ReviewClassfier.DECEPTIVE,
+                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold4");
+    }
+
+    protected void prepareDeceptiveReviewsNegative() throws Exception {
+        prepareData(ReviewClassfier.DECEPTIVE,
+                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold1");
+        prepareData(ReviewClassfier.DECEPTIVE,
+                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold2");
+        prepareData(ReviewClassfier.DECEPTIVE,
+                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold3");
+        prepareData(ReviewClassfier.DECEPTIVE,
+                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold4");
     }
 }

@@ -1,6 +1,6 @@
 package naive.pure;
 
-import naive.Dataset;
+import naive.DatasetFactory;
 import naive.NaiveBayesEngine;
 import naive.TestAbstract;
 import naive.classifiers.ReviewClassfier;
@@ -15,20 +15,20 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by Maciej Rudnicki on 03/02/2017.
  */
-public class PureNaiveBayesReviewTest extends TestAbstract {
+public class ReviewTest extends TestAbstract {
 
     @Before
     public void prepare() throws Exception {
-        dataset = new Dataset.DatasetBuilder(ReviewClassfier.class).build();
-        engine = new NaiveBayesEngine(dataset);
+        dataset = DatasetFactory.getDataset(ReviewClassfier.class);
 
         prepareDeceptiveReviewsNegative();
         prepateDeceptiveReviewsPositive();
         prepareThuthfullReviewsNegative();
         prepareThuthfullReviewsPositive();
 
-    }
+        engine = new NaiveBayesEngine(dataset);
 
+    }
 
     @Test
     public void deceptiveReviewsRecognition() throws Exception {
@@ -45,7 +45,6 @@ public class PureNaiveBayesReviewTest extends TestAbstract {
         System.out.println("Correct values : " + correctValuesTruthfullReviewsPositive + " of " + allValuesTruthfullReviewsPositive);
 
 
-
         Map<URL, Enum> truthfullReviewsNegative = prepareMapOfUrl
                 ("/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold5",
                         ReviewClassfier.TRUTHFULL);
@@ -56,7 +55,6 @@ public class PureNaiveBayesReviewTest extends TestAbstract {
         long allValuesTruthfullReviewsNegative = (long) truthfullReviewsNegative.entrySet().size();
 
         System.out.println("Correct values : " + correctValuesTruthfullReviewsNegative + " of " + allValuesTruthfullReviewsNegative);
-
 
 
         Map<URL, Enum> deceptiveReviewsPositive = prepareMapOfUrl
@@ -71,7 +69,6 @@ public class PureNaiveBayesReviewTest extends TestAbstract {
         System.out.println("Correct values : " + correctValuesDeceptiveReviewsPositive + " of " + allValuesDeceptiveReviewsPositive);
 
 
-
         Map<URL, Enum> deceptiveReviewsNegative = prepareMapOfUrl
                 ("/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold5",
                         ReviewClassfier.DECEPTIVE);
@@ -84,17 +81,16 @@ public class PureNaiveBayesReviewTest extends TestAbstract {
         System.out.println("Correct values : " + correctValuesDeceptiveReviewsNegative + " of " + allValuesDeceptiveReviewsNegative);
 
 
-
         long correctValues =
-                    correctValuesTruthfullReviewsPositive
-                +   correctValuesTruthfullReviewsNegative
-                +   correctValuesDeceptiveReviewsPositive
-                +   correctValuesDeceptiveReviewsNegative;
+                correctValuesTruthfullReviewsPositive
+                        + correctValuesTruthfullReviewsNegative
+                        + correctValuesDeceptiveReviewsPositive
+                        + correctValuesDeceptiveReviewsNegative;
         long allValues =
-                    allValuesTruthfullReviewsPositive
-                +   allValuesTruthfullReviewsNegative
-                +   allValuesDeceptiveReviewsPositive
-                +   allValuesDeceptiveReviewsNegative;
+                allValuesTruthfullReviewsPositive
+                        + allValuesTruthfullReviewsNegative
+                        + allValuesDeceptiveReviewsPositive
+                        + allValuesDeceptiveReviewsNegative;
 
         double efficiency = (double) correctValues * 100 / allValues;
 
@@ -111,49 +107,4 @@ public class PureNaiveBayesReviewTest extends TestAbstract {
     }
 
 
-    private void prepareThuthfullReviewsPositive() throws Exception {
-
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold1");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold2");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold3");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/positive_polarity/truthful_from_TripAdvisor/fold4");
-    }
-
-    private void prepareThuthfullReviewsNegative() throws Exception {
-
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold1");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold2");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold3");
-        prepareData(ReviewClassfier.TRUTHFULL,
-                "/datasets/op_spam_v1.4/negative_polarity/truthful_from_Web/fold4");
-    }
-
-    private void prepateDeceptiveReviewsPositive() throws Exception {
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold1");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold2");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold3");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/positive_polarity/deceptive_from_MTurk/fold4");
-    }
-
-    private void prepareDeceptiveReviewsNegative() throws Exception {
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold1");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold2");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold3");
-        prepareData(ReviewClassfier.DECEPTIVE,
-                "/datasets/op_spam_v1.4/negative_polarity/deceptive_from_MTurk/fold4");
-    }
 }
