@@ -1,10 +1,10 @@
 package random;
 
-import naive.preprocessors.RemoveSpecialCharsPreprocessor;
+import naive.preprocessors.RemoveDotAndCommaPreprocessor;
+import naive.preprocessors.RemovePersonalFormAndTimesForm;
 import org.junit.Test;
 
 import java.security.SecureRandom;
-import java.util.Map;
 import java.util.Random;
 
 /**
@@ -17,10 +17,8 @@ public class RandomTest {
     @Test
     public void myRandomTest(){
 
-        String a = "ala\n12{3()k?ota!";
-
-        System.out.println(Math.pow(3,2));
-
+        System.out.println(2.71*2.71);
+        System.out.println(Math.exp(2));
     }
 
 }

@@ -35,10 +35,15 @@ public class SpamTest extends TestAbstract {
 
             System.out.println(String.join(" ", "Loop nr",String.valueOf(i+1),
                     "Spam correct answers :",String.valueOf(pair.getKey()),
-                    "on ",String.valueOf(pair.getValue())));
+                    "on ",String.valueOf(pair.getValue()),
+                    "what gives", String.valueOf((double)pair.getKey()*100/pair.getValue()),
+                    "efficiency"
+            ));
         }
 
-        System.out.println(String.join(" ","Spam. Summary efficiency is ",
+        System.out.println(String.join(" ","Summary recognised", String.valueOf(summaryCorrectAnswers),
+                "in set of",String.valueOf(summaryRecords),"records.",
+                "Spam. Summary efficiency is ",
                 String.valueOf((double)summaryCorrectAnswers*100/summaryRecords),"%"));
 
     }

@@ -81,6 +81,9 @@ public class NaiveBayesEngine<T extends Enum> {
                         .sum());
         }
 
+//        double allProbabilities = results.entrySet().stream().mapToDouble(Map.Entry::getValue).sum();
+//        results.forEach((k,v)-> System.out.println(k+" "+(v*100/allProbabilities)));
+
         return results.entrySet()
                 .stream()
                 .max((entry1, entry2) -> entry1.getValue() > entry2.getValue() ? 1 : -1)
