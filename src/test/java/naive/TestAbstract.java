@@ -33,9 +33,9 @@ public class TestAbstract {
 
     protected static final double VALIDATION_SIZE_PERCENT = 20;
 
-    protected static final int NMBER_OF_TEST_RUNS = 10;
+    protected static final int AMOUNT_OF_ITERATIONS_OF_TEST_RUN = 10;
 
-    protected Dataset dataset;
+    protected DataSet dataset;
 
     protected NaiveBayesEngine engine;
 

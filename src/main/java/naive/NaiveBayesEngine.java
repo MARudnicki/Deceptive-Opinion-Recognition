@@ -3,7 +3,6 @@ package naive;
 import javafx.util.Pair;
 import naive.exceptions.NaiveBayesException;
 import naive.kernels.Kernel;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -23,11 +22,11 @@ public class NaiveBayesEngine<T extends Enum> {
 
     private Class<T> classifierType;
 
-    private Dataset dataset;
+    private DataSet dataset;
 
     private Kernel kernel;
 
-    public NaiveBayesEngine(Dataset dataset) {
+    public NaiveBayesEngine(DataSet dataset) {
         this.dataSet = dataset.getDataSet();
         this.classifierSizes = dataset.getClassifierSizes();
         this.classifierType = dataset.getClassifier();
