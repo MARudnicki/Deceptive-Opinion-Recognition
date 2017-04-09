@@ -45,7 +45,6 @@ public class DataSet<T extends Enum> {
     }
 
 
-
     public Map<String, Map<Enum, Integer>> getDataSet() {
         return dataSet;
     }
@@ -72,14 +71,14 @@ public class DataSet<T extends Enum> {
         }
     }
 
-    public String preprocess(String sentence){
-        for(Preprocessor p : preprocessors){
+    public String preprocess(String sentence) {
+        for (Preprocessor p : preprocessors) {
             sentence = p.process(sentence);
         }
         return sentence;
     }
 
-    private Collection<String> processURL(URL url){
+    private Collection<String> processURL(URL url) {
         String sentence = readSentence(url);
 
         sentence = preprocess(sentence);
@@ -112,7 +111,11 @@ public class DataSet<T extends Enum> {
     private void createNew(String word, Enum classifier) {
 
         Map<Enum, Integer> map = (Map<Enum, Integer>) EnumSet.allOf(classifier.getDeclaringClass())
-                .stream().collect(Collectors.toMap(c->c, c->0));
+                .stream()
+                .collect(Collectors.toMap(
+                        c -> c,
+                        c -> 0)
+                );
 
         dataSet.put(word, map);
         update(word, classifier);
@@ -125,7 +128,7 @@ public class DataSet<T extends Enum> {
         classifierSizes.put(classifier, newValue);
     }
 
-    public static class DatasetBuilder{
+    public static class DatasetBuilder {
 
         private Map<Enum, Integer> classifierSizesBuilder;
 
@@ -134,16 +137,21 @@ public class DataSet<T extends Enum> {
         private List<Preprocessor> preprocessorsBuilder = new ArrayList<>();
 
         public DatasetBuilder(Class enumClass) {
-            this.classifierSizesBuilder = (Map<Enum, Integer>) EnumSet.allOf(enumClass).stream()
-                    .collect(Collectors.toMap(enumType -> enumType, enumType->0));
+            this.classifierSizesBuilder = (Map<Enum, Integer>) EnumSet.allOf(enumClass)
+                    .stream()
+                    .collect(Collectors.toMap(
+                            enumType -> enumType,
+                            enumType -> 0)
+                    );
             this.classifierBuilder = enumClass;
         }
 
-        public DatasetBuilder with(Preprocessor preprocessor){
+        public DatasetBuilder with(Preprocessor preprocessor) {
             preprocessorsBuilder.add(preprocessor);
             return this;
         }
-        public DataSet build(){
+
+        public DataSet build() {
             return new DataSet(this);
         }
     }

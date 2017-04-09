@@ -3,6 +3,7 @@ package naive.pure;
 import naive.TestAbstract;
 import naive.classifiers.LanguageClassifier;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -26,9 +27,19 @@ public class LanguageTest extends TestAbstract {
         data.putAll(prepareData(LanguageClassifier.POLISH, "/datasets/language-recognition/pl"));
 
         dataset = prepareDataset(LanguageClassifier.class);
-        engine = prepareEngine(dataset);
+
+        engine = prepareEngine(dataset)
+                .debugMode(true);
 
         dataset.train(data);
+    }
+
+
+    @Test
+//    @Ignore
+    public void sample() throws Exception{
+
+        System.out.println("Predicted "+engine.predict("This is sample message"));
     }
 
     @Test

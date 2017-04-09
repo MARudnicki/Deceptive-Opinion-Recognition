@@ -85,7 +85,7 @@ public class TestAbstract {
                 .collect(Collectors.toMap(URL -> URL, URL -> spamClassfier));
     }
 
-    protected Boolean isPredictionCorrect(Map.Entry<URL, Enum> entry) {
+    protected Boolean predictAndCompare(Map.Entry<URL, Enum> entry) {
         String path = pathToResource(entry.getKey().toString());
 
         String sentence = loadFile(path);

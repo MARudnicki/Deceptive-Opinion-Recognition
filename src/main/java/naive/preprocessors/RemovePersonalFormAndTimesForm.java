@@ -8,14 +8,18 @@ import java.util.stream.Collectors;
  * Created by Maciej Rudnicki on 07/02/2017.
  */
 public class RemovePersonalFormAndTimesForm implements Preprocessor {
+
+    private static final String SPACE = " ";
+
     @Override
     public String process(String sentence) {
 
-            Collection<String> words =  Arrays.stream(sentence.split(" "))
+            Collection<String> words =  Arrays.stream(sentence.split(SPACE))
                     .map(String::trim)
                     .collect(Collectors.toList());
 
             StringBuilder stringBuilder = new StringBuilder();
+
             for(String word : words){
                 if(word.endsWith("s")){
                     word = word.substring(0, word.length()-1);

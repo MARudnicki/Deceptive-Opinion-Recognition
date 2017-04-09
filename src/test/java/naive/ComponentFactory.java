@@ -1,6 +1,7 @@
 package naive;
 
 import naive.kernels.ExponentialKernel;
+import naive.kernels.LogicalKernel;
 import naive.preprocessors.RemoveExclationMarksPreprocessor;
 import naive.preprocessors.RemoveSpecialCharsPreprocessor;
 
@@ -28,6 +29,7 @@ public class ComponentFactory {
      */
     public static NaiveBayesEngine prepareEngine(DataSet dataset) {
         return new NaiveBayesEngine(dataset)
+//                .with(new LogicalKernel())
                 .with(new ExponentialKernel(3));
 
     }
