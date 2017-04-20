@@ -21,7 +21,7 @@ public class ReviewTest extends TestAbstract {
     private String answer;
 
     @Test
-//    @Ignore
+    @Ignore
     public void sample() throws Exception {
 
         Given:

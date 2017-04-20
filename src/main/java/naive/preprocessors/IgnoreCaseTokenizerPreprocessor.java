@@ -3,10 +3,10 @@ package naive.preprocessors;
 /**
  * Created by Maciej Rudnicki on 05/02/2017.
  */
-public class IgnoreCasePreprocessor implements Preprocessor {
+public class IgnoreCaseTokenizerPreprocessor implements TokenizerPreprocessor {
 
     @Override
-    public String process(String sentence) {
+    public String tokenize(String sentence) {
         return sentence.toLowerCase();
     }
 

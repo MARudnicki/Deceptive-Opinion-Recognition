@@ -37,6 +37,7 @@ public class NaiveBayesEngine<T extends Enum> {
 
     /**
      * Kernel for probability calculations
+     *
      * @param kernel Selected Kernel
      * @return this
      */
@@ -50,16 +51,17 @@ public class NaiveBayesEngine<T extends Enum> {
 
     /**
      * debug mode - pring custom probability for each classified text
+     *
      * @param debugMode - default false
      * @return this.
      */
-    public NaiveBayesEngine debugMode(boolean debugMode){
+    public NaiveBayesEngine debugMode(boolean debugMode) {
         this.debugMode = debugMode;
         return this;
     }
 
     /**
-     * Examine sentence word after word with probabilities.
+     * Examine sentence word after word withTokenizer probabilities.
      *
      * @param sentence
      * @return predicted T
@@ -72,35 +74,32 @@ public class NaiveBayesEngine<T extends Enum> {
             throw new NaiveBayesException("Kernel is null ");
         }
 
-        sentence = dataset.preprocess(sentence);
+        sentence = dataset.tokenizationPreprocess(sentence);
 
-        List<String> listOfTokens =
-                Arrays.stream(sentence.split(" "))
-                        .filter(word -> dataSet.containsKey(word))
-                        .collect(Collectors.toList());
+        List<String> listOfTokens = dataset.splitToTokensUsingNGramsSplitter(sentence);
 
         if (listOfTokens.size() == 0) {
             throw new NaiveBayesException("None of words were recognised ");
         }
 
-        List<Pair<String,Map<Enum,Double>>> wordsWithClassifierProbabilities = calculateWords(listOfTokens);
+        List<Pair<String, Map<Enum, Double>>> wordsWithClassifierProbabilities = calculateWords(listOfTokens);
 
         Map<Enum, Double> results = new HashMap<>();
 
         for (Object object : EnumSet.allOf(classifierType)) {
-            Enum classifier = (Enum)object;
+            Enum classifier = (Enum) object;
             results.put(
                     classifier,
                     wordsWithClassifierProbabilities.stream()
-                        .map(entry -> entry.getValue().get(classifier))
-                        .mapToDouble(d->d)
-                        .sum());
+                            .map(entry -> entry.getValue().get(classifier))
+                            .mapToDouble(d -> d)
+                            .sum());
         }
 
         /**
          * for printing custom text probabilities.
          */
-        if(debugMode) {
+        if (debugMode) {
             double allProbabilities = results.entrySet().stream().mapToDouble(Map.Entry::getValue).sum();
             results.forEach((k, v) -> System.out.println(k + " " + (v * 100 / allProbabilities)));
         }

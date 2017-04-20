@@ -3,10 +3,10 @@ package naive.preprocessors;
 /**
  * Created by Maciej Rudnicki on 06/02/2017.
  */
-public class RemoveDotAndCommaPreprocessor implements Preprocessor{
+public class RemoveDotAndCommaTokenizerPreprocessor implements TokenizerPreprocessor {
 
     @Override
-    public String process(String sentence) {
+    public String tokenize(String sentence) {
         sentence = sentence.replaceAll(","," ");
         sentence = sentence.replaceAll("\\."," ");
 

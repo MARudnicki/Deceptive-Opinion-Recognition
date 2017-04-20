@@ -1,6 +1,8 @@
 package naive;
 
-import naive.preprocessors.Preprocessor;
+import com.google.common.base.Preconditions;
+import naive.ngrams.NGramsSplitter;
+import naive.preprocessors.TokenizerPreprocessor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * Created by Maciej Rudnicki on 01/02/2017.
  */
@@ -30,13 +30,15 @@ public class DataSet<T extends Enum> {
 
     private Class<T> classifier;
 
-    private List<Preprocessor> preprocessors;
+    private List<TokenizerPreprocessor> tokenizerPreprocessors;
+
+    private NGramsSplitter nGramsSplitter;
 
     public DataSet(DatasetBuilder builder) {
-
+        nGramsSplitter = builder.nGramsSplitterBuilder;
         classifierSizes = builder.classifierSizesBuilder;
         classifier = builder.classifierBuilder;
-        preprocessors = builder.preprocessorsBuilder;
+        tokenizerPreprocessors = builder.preprocessorsBuilder;
     }
 
     public void train(Map<URL, Enum> trainingSet) {
@@ -71,19 +73,23 @@ public class DataSet<T extends Enum> {
         }
     }
 
-    public String preprocess(String sentence) {
-        for (Preprocessor p : preprocessors) {
-            sentence = p.process(sentence);
+    public String tokenizationPreprocess(String sentence) {
+        for (TokenizerPreprocessor p : tokenizerPreprocessors) {
+            sentence = p.tokenize(sentence);
         }
         return sentence;
+    }
+
+    public List<String> splitToTokensUsingNGramsSplitter(String sentence){
+        return nGramsSplitter.split(sentence);
     }
 
     private Collection<String> processURL(URL url) {
         String sentence = readSentence(url);
 
-        sentence = preprocess(sentence);
+        sentence = tokenizationPreprocess(sentence);
 
-        return Arrays.stream(sentence.split(" ")).map(String::trim).collect(toList());
+        return splitToTokensUsingNGramsSplitter(sentence);
     }
 
     private void addWords(Collection<String> words, final Enum classifier) {
@@ -134,7 +140,9 @@ public class DataSet<T extends Enum> {
 
         private Class classifierBuilder;
 
-        private List<Preprocessor> preprocessorsBuilder = new ArrayList<>();
+        private List<TokenizerPreprocessor> preprocessorsBuilder = new ArrayList<>();
+
+        private NGramsSplitter nGramsSplitterBuilder;
 
         public DatasetBuilder(Class enumClass) {
             this.classifierSizesBuilder = (Map<Enum, Integer>) EnumSet.allOf(enumClass)
@@ -146,12 +154,19 @@ public class DataSet<T extends Enum> {
             this.classifierBuilder = enumClass;
         }
 
-        public DatasetBuilder with(Preprocessor preprocessor) {
-            preprocessorsBuilder.add(preprocessor);
+        public DatasetBuilder withTokenizer(TokenizerPreprocessor tokenizerPreprocessor) {
+            preprocessorsBuilder.add(tokenizerPreprocessor);
+            return this;
+        }
+
+        public DatasetBuilder withNGramsSplitter(NGramsSplitter nGramsSplitter){
+            this.nGramsSplitterBuilder = nGramsSplitter;
             return this;
         }
 
         public DataSet build() {
+            Preconditions.checkState(nGramsSplitterBuilder !=null, "nGramsSplitterBuilder has to be declared");
+
             return new DataSet(this);
         }
     }
