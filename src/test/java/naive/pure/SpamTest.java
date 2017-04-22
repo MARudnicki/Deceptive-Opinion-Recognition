@@ -25,13 +25,12 @@ public class SpamTest extends TestAbstract {
     public void sample() throws Exception {
 
         Given:
-        dataset = prepareDataset(SpamClassfier.class);
-        engine = prepareEngine(dataset);
-
         data = new HashMap<>();
         data.putAll(prepareSpam());
         data.putAll(prepareHam());
-        dataset.train(data);
+
+        dataset = prepareDataset(SpamClassfier.class, data);
+        engine = prepareEngine(dataset);
 
         Then:
         answer = engine.predict("???").name();
@@ -66,9 +65,6 @@ public class SpamTest extends TestAbstract {
 
     protected Pair<Long, Long> singleRun() throws Exception {
 
-        dataset = prepareDataset(SpamClassfier.class);
-        engine = prepareEngine(dataset);
-
         data = new HashMap<>();
         data.putAll(prepareSpam());
         data.putAll(prepareHam());
@@ -81,7 +77,8 @@ public class SpamTest extends TestAbstract {
         Map<URL, Enum> trainingSet = pair.getKey();
         Map<URL, Enum> verificationSet = pair.getValue();
 
-        dataset.train(trainingSet);
+        dataset = prepareDataset(SpamClassfier.class,trainingSet);
+        engine = prepareEngine(dataset);
 
         long correctValues = verificationSet.entrySet()
                 .stream()
