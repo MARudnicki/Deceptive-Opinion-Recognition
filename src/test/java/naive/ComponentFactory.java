@@ -14,18 +14,18 @@ import java.util.Map;
 public class ComponentFactory {
 
     /**
-     * DataSet
+     * DataContainer
      * @param clazz Classifier type e.g. Language/Review/SpamClassfier
-     * @return DataSet with Tokenization pre-processing
+     * @return DataContainer with Tokenization pre-processing
      */
-    public static DataSet prepareDataset(Class clazz, Map<URL, Enum> data) {
-        DataSet dataSet =  new DataSet.DatasetBuilder(clazz)
+    public static DataContainer prepareDataset(Class clazz, Map<URL, Enum> data) {
+        DataContainer dataContainer =  new DataContainer.DatasetBuilder(clazz)
                 .with(new RemoveExclationMarksPreprocessor())
                 .with(new RemoveSpecialCharsPreprocessor())
                 .build();
-        dataSet.train(data);
+        dataContainer.train(data);
 
-        return dataSet;
+        return dataContainer;
     }
 
     /**
@@ -33,10 +33,11 @@ public class ComponentFactory {
      * @param dataset with training data & pre-processing configuration
      * @return engine to predict class of classifier of study test
      */
-    public static NaiveBayesEngine prepareEngine(DataSet dataset) {
-        return new NaiveBayesEngine(dataset)
-//                .with(new LogicalKernel())
-                .with(new ExponentialKernel(3));
+    public static NaiveBayesEngine prepareEngine(DataContainer dataset) {
+        return NaiveBayesEngine.newNaiveBayesEngine()
+                .dataSetContainer(dataset)
+                .kernel(new ExponentialKernel(3))
+                .build();
 
     }
 

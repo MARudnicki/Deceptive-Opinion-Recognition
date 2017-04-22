@@ -1,5 +1,6 @@
 package naive;
 
+import com.google.common.base.Preconditions;
 import javafx.util.Pair;
 import naive.exceptions.NaiveBayesException;
 import naive.kernels.Kernel;
@@ -16,46 +17,24 @@ import java.util.stream.Collectors;
  */
 public class NaiveBayesEngine<T extends Enum> {
 
-    private Map<String, Map<Enum, Integer>> dataSet;
-
-    private Map<T, Integer> classifierSizes;
-
-    private Class<T> classifierType;
-
-    private DataSet dataset;
+    private DataContainer dataSetContainer;
 
     private Kernel kernel;
 
-    private boolean debugMode = false;
+    private boolean debugMode = false; //default FALSE
 
-    public NaiveBayesEngine(DataSet dataset) {
-        this.dataSet = dataset.getDataSet();
-        this.classifierSizes = dataset.getClassifierSizes();
-        this.classifierType = dataset.getClassifier();
-        this.dataset = dataset;
+    private NaiveBayesEngine(DataContainer dataSetContainer) {
+        this.dataSetContainer = dataSetContainer;
     }
 
-    /**
-     * Kernel for probability calculations
-     * @param kernel Selected Kernel
-     * @return this
-     */
-    public NaiveBayesEngine with(Kernel kernel) {
-        if (this.kernel != null) {
-            throw new NaiveBayesException("Only one kernel is allowed !");
-        }
-        this.kernel = kernel;
-        return this;
+    private NaiveBayesEngine(Builder builder) {
+        this.dataSetContainer = builder.dataSetContainer;
+        this.kernel = builder.kernel;
+        this.debugMode = builder.debugMode;
     }
 
-    /**
-     * debug mode - pring custom probability for each classified text
-     * @param debugMode - default false
-     * @return this.
-     */
-    public NaiveBayesEngine debugMode(boolean debugMode){
-        this.debugMode = debugMode;
-        return this;
+    public static Builder newNaiveBayesEngine() {
+        return new Builder();
     }
 
     /**
@@ -72,11 +51,11 @@ public class NaiveBayesEngine<T extends Enum> {
             throw new NaiveBayesException("Kernel is null ");
         }
 
-        sentence = dataset.preprocess(sentence);
+        sentence = dataSetContainer.preprocess(sentence);
 
         List<String> listOfTokens =
                 Arrays.stream(sentence.split(" "))
-                        .filter(word -> dataSet.containsKey(word))
+                        .filter(word -> dataSetContainer.getDataSet().containsKey(word))
                         .collect(Collectors.toList());
 
         if (listOfTokens.size() == 0) {
@@ -87,7 +66,7 @@ public class NaiveBayesEngine<T extends Enum> {
 
         Map<Enum, Double> results = new HashMap<>();
 
-        for (Object object : EnumSet.allOf(classifierType)) {
+        for (Object object : EnumSet.allOf(dataSetContainer.getClassifier())) {
             Enum classifier = (Enum)object;
             results.put(
                     classifier,
@@ -119,19 +98,49 @@ public class NaiveBayesEngine<T extends Enum> {
     }
 
     private Map<Enum, Double> calculateSingleWord(String word) {
-        Map<Enum, Integer> occurences = dataSet.get(word);
+        Map<Enum, Integer> occurences = (Map<Enum, Integer>)dataSetContainer.getDataSet().get(word);
 
         double probabilitySummarized = occurences.entrySet().stream()
-                .map((entry -> (double) entry.getValue() / classifierSizes.get(entry.getKey())))
+                .map((entry -> (double) entry.getValue() / (Integer)dataSetContainer.getClassifierSizes().get(entry
+                        .getKey())))
                 .mapToDouble(d -> d)
                 .sum();
 
         Map<Enum, Double> probabilities = new HashMap<>();
 
         occurences.forEach((k, v) -> probabilities.put(k,
-                kernel.predict(((double) v / classifierSizes.get(k)) / probabilitySummarized)));
+                kernel.predict(((double) v / (Integer)dataSetContainer.getClassifierSizes().get(k)) / probabilitySummarized)));
 
         return probabilities;
     }
 
+
+    public static final class Builder {
+        private DataContainer dataSetContainer;
+        private Kernel kernel;
+        private boolean debugMode;
+
+        private Builder() {
+        }
+
+        public NaiveBayesEngine build() {
+            return new NaiveBayesEngine(this);
+        }
+
+        public Builder dataSetContainer(DataContainer dataSetContainer) {
+            this.dataSetContainer = dataSetContainer;
+            return this;
+        }
+
+        public Builder kernel(Kernel kernel) {
+            Preconditions.checkState(this.kernel == null, "Only one Kernel is allowed");
+            this.kernel = kernel;
+            return this;
+        }
+
+        public Builder debugMode(boolean debugMode) {
+            this.debugMode = debugMode;
+            return this;
+        }
+    }
 }

@@ -33,7 +33,7 @@ public class ReviewTest extends TestAbstract {
 
         dataset = prepareDataset(ReviewClassfier.class, data);
 
-        engine = prepareEngine(dataset).debugMode(true);
+        engine = prepareEngine(dataset);
 
         When:
         answer = engine.predict("It was a greate hostel. Really it was best ever!").name();

@@ -22,7 +22,7 @@ import static java.util.stream.Collectors.toList;
 /**
  * Created by Maciej Rudnicki on 01/02/2017.
  */
-public class DataSet<T extends Enum> {
+public class DataContainer<T extends Enum> {
 
     private Map<String, Map<Enum, Integer>> dataSet = new HashMap<>();
 
@@ -32,7 +32,7 @@ public class DataSet<T extends Enum> {
 
     private List<Preprocessor> preprocessors;
 
-    public DataSet(DatasetBuilder builder) {
+    public DataContainer(DatasetBuilder builder) {
 
         classifierSizes = builder.classifierSizesBuilder;
         classifier = builder.classifierBuilder;
@@ -151,8 +151,8 @@ public class DataSet<T extends Enum> {
             return this;
         }
 
-        public DataSet build() {
-            return new DataSet(this);
+        public DataContainer build() {
+            return new DataContainer(this);
         }
     }
 }

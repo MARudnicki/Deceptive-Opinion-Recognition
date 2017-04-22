@@ -29,7 +29,7 @@ public class LanguageTest extends TestAbstract {
         dataset = prepareDataset(LanguageClassifier.class, data);
 
         engine = prepareEngine(dataset)
-                .debugMode(true);
+                ;
 
     }
 
