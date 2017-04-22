@@ -1,0 +1,3 @@
+text maching - measure matching level of messages - try this solution
+
+5. Artificial Immune System (AIS)  - http://www.ijcsi.org/papers/IJCSI-9-2-1-589-597.pdf
