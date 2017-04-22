@@ -75,6 +75,7 @@ public class NaiveBayesEngine<T extends Enum> {
                             .map(entry -> entry.getValue().get(classifier))
                             .mapToDouble(d -> d)
                             .sum());
+
         }
 
         /**
