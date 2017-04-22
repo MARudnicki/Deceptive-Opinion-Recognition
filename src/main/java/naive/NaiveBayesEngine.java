@@ -1,14 +1,18 @@
 package naive;
 
+import com.google.common.base.Preconditions;
 import javafx.util.Pair;
+import naive.classifiers.ReviewClassfier;
+import naive.classifiers.SpamClassfier;
 import naive.exceptions.NaiveBayesException;
 import naive.kernels.Kernel;
 
-import java.util.Arrays;
+import java.security.SecureRandom;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -16,52 +20,24 @@ import java.util.stream.Collectors;
  */
 public class NaiveBayesEngine<T extends Enum> {
 
-    private Map<String, Map<Enum, Integer>> dataSet;
-
-    private Map<T, Integer> classifierSizes;
-
-    private Class<T> classifierType;
-
-    private DataSet dataset;
+    private DataContainer dataSetContainer;
 
     private Kernel kernel;
 
-    private boolean debugMode = false;
+    private boolean debugMode = false; //default FALSE
 
-    public NaiveBayesEngine(DataSet dataset) {
-        this.dataSet = dataset.getDataSet();
-        this.classifierSizes = dataset.getClassifierSizes();
-        this.classifierType = dataset.getClassifier();
-        this.dataset = dataset;
+    private NaiveBayesEngine(Builder builder) {
+        this.dataSetContainer = builder.dataSetContainer;
+        this.kernel = builder.kernel;
+        this.debugMode = builder.debugMode;
+    }
+
+    public static Builder newNaiveBayesEngine() {
+        return new Builder();
     }
 
     /**
-     * Kernel for probability calculations
-     *
-     * @param kernel Selected Kernel
-     * @return this
-     */
-    public NaiveBayesEngine with(Kernel kernel) {
-        if (this.kernel != null) {
-            throw new NaiveBayesException("Only one kernel is allowed !");
-        }
-        this.kernel = kernel;
-        return this;
-    }
-
-    /**
-     * debug mode - pring custom probability for each classified text
-     *
-     * @param debugMode - default false
-     * @return this.
-     */
-    public NaiveBayesEngine debugMode(boolean debugMode) {
-        this.debugMode = debugMode;
-        return this;
-    }
-
-    /**
-     * Examine sentence word after word withTokenizer probabilities.
+     * Examine sentence word after word tokenizer probabilities.
      *
      * @param sentence
      * @return predicted T
@@ -70,23 +46,28 @@ public class NaiveBayesEngine<T extends Enum> {
         if (sentence.isEmpty()) {
             throw new NaiveBayesException("Sentence cannot be empty ");
         }
-        if (kernel == null) {
-            throw new NaiveBayesException("Kernel is null ");
-        }
 
-        sentence = dataset.tokenizationPreprocess(sentence);
+        sentence = dataSetContainer.performTokenization(sentence);
 
-        List<String> listOfTokens = dataset.splitToTokensUsingNGramsSplitter(sentence);
+        List<String> listOfTokens = dataSetContainer.performNGramsSplitter(sentence);
+
+        listOfTokens = removeNotRocognisedWords(listOfTokens);
 
         if (listOfTokens.size() == 0) {
+            if (dataSetContainer.getClassifier().equals(ReviewClassfier.class)) {
+                return randomReviewClassifier();
+            } else if (dataSetContainer.getClassifier().equals(SpamClassfier.class)){
+                return randomSpamClassifier();
+            } else {
             throw new NaiveBayesException("None of words were recognised ");
+            }
         }
 
         List<Pair<String, Map<Enum, Double>>> wordsWithClassifierProbabilities = calculateWords(listOfTokens);
 
         Map<Enum, Double> results = new HashMap<>();
 
-        for (Object object : EnumSet.allOf(classifierType)) {
+        for (Object object : EnumSet.allOf(dataSetContainer.getClassifier())) {
             Enum classifier = (Enum) object;
             results.put(
                     classifier,
@@ -94,6 +75,7 @@ public class NaiveBayesEngine<T extends Enum> {
                             .map(entry -> entry.getValue().get(classifier))
                             .mapToDouble(d -> d)
                             .sum());
+
         }
 
         /**
@@ -112,25 +94,79 @@ public class NaiveBayesEngine<T extends Enum> {
 
 
     private List<Pair<String, Map<Enum, Double>>> calculateWords(List<String> words) {
-        return words.stream().map(word -> new Pair<>(word, calculateSingleWord(word))).collect(Collectors
-                .toList());
+        return words.stream()
+                .map(word -> new Pair<>(
+                        word,
+                        calculateSingleWord(word)))
+                .collect(Collectors.toList()
+                );
 
     }
 
     private Map<Enum, Double> calculateSingleWord(String word) {
-        Map<Enum, Integer> occurences = dataSet.get(word);
+        Map<Enum, Integer> occurences = (Map<Enum, Integer>) dataSetContainer.getDataSet().get(word);
 
         double probabilitySummarized = occurences.entrySet().stream()
-                .map((entry -> (double) entry.getValue() / classifierSizes.get(entry.getKey())))
+                .map((entry -> (double) entry.getValue() / (Integer) dataSetContainer.getClassifierSizes().get(entry
+                        .getKey())))
                 .mapToDouble(d -> d)
                 .sum();
 
         Map<Enum, Double> probabilities = new HashMap<>();
 
         occurences.forEach((k, v) -> probabilities.put(k,
-                kernel.predict(((double) v / classifierSizes.get(k)) / probabilitySummarized)));
+                kernel.predict(((double) v / (Integer) dataSetContainer.getClassifierSizes().get(k)) / probabilitySummarized)));
 
         return probabilities;
     }
 
+    private List<String> removeNotRocognisedWords(List<String> listOfTokens) {
+        return listOfTokens.stream()
+                .filter(word -> dataSetContainer.getDataSet().containsKey(word))
+                .collect(Collectors.toList());
+    }
+
+    private static Random random = new SecureRandom();
+
+    private static Enum randomReviewClassifier() {
+        int x = random.nextInt(ReviewClassfier.values().length);
+        return ReviewClassfier.values()[x];
+    }
+
+    private static Enum randomSpamClassifier() {
+        int x = random.nextInt(SpamClassfier.values().length);
+        return SpamClassfier.values()[x];
+    }
+
+
+    public static final class Builder {
+        private DataContainer dataSetContainer;
+        private Kernel kernel;
+        private boolean debugMode;
+
+        private Builder() {
+        }
+
+        public NaiveBayesEngine build() {
+            Preconditions.checkState(kernel != null, "Kernel has to be set");
+
+            return new NaiveBayesEngine(this);
+        }
+
+        public Builder dataSetContainer(DataContainer dataSetContainer) {
+            this.dataSetContainer = dataSetContainer;
+            return this;
+        }
+
+        public Builder kernel(Kernel kernel) {
+            Preconditions.checkState(this.kernel == null, "Only one Kernel is allowed");
+            this.kernel = kernel;
+            return this;
+        }
+
+        public Builder debugMode(boolean debugMode) {
+            this.debugMode = debugMode;
+            return this;
+        }
+    }
 }

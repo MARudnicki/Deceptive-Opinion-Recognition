@@ -3,10 +3,10 @@ package naive.preprocessors;
 /**
  * Created by Maciej Rudnicki on 06/02/2017.
  */
-public class RemoveSpecialCharsTokenizerPreprocessor implements TokenizerPreprocessor {
+public class RemoveSpecialCharsTokenizer implements Tokenizer {
 
     @Override
-    public String tokenize(String sentence) {
+    public String process(String sentence) {
         return sentence.replaceAll("[\"\\t\\n\\r\\f!\\\"#%&()*+,./:;<=>?@[\\\\]^-_`{|}~\"]"," ");
     }
 }

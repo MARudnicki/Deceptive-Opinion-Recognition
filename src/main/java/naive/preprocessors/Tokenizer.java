@@ -3,8 +3,8 @@ package naive.preprocessors;
 /**
  * Created by Maciej Rudnicki on 05/02/2017.
  */
-public interface TokenizerPreprocessor {
+public interface Tokenizer {
 
-    String tokenize(String sentence);
+    String process(String sentence);
 
 }

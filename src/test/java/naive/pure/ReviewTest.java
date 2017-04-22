@@ -25,16 +25,15 @@ public class ReviewTest extends TestAbstract {
     public void sample() throws Exception {
 
         Given:
-        dataset = prepareDataset(ReviewClassfier.class);
-
-        engine = prepareEngine(dataset).debugMode(true);
-
         data = new HashMap<>();
         data.putAll(prepareDeceptiveReviewsNegative());
         data.putAll(prepateDeceptiveReviewsPositive());
         data.putAll(prepareThuthfullReviewsNegative());
         data.putAll(prepareThuthfullReviewsPositive());
-        dataset.train(data);
+
+        dataset = prepareDataset(ReviewClassfier.class, data);
+
+        engine = prepareEngine(dataset);
 
         When:
         answer = engine.predict("It was a greate hostel. Really it was best ever!").name();
@@ -68,9 +67,6 @@ public class ReviewTest extends TestAbstract {
     }
 
     private Pair<Long, Long> singleRun() throws Exception {
-        dataset = prepareDataset(ReviewClassfier.class);
-        engine = prepareEngine(dataset);
-
         data = new HashMap<>();
 
         data.putAll(prepareDeceptiveReviewsNegative());
@@ -86,7 +82,8 @@ public class ReviewTest extends TestAbstract {
         Map<URL, Enum> trainingSet = pair.getKey();
         Map<URL, Enum> verificationSet = pair.getValue();
 
-        dataset.train(trainingSet);
+        dataset = prepareDataset(ReviewClassfier.class, trainingSet);
+        engine = prepareEngine(dataset);
 
         long correctValues = verificationSet.entrySet()
                 .stream()

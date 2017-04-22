@@ -3,10 +3,10 @@ package naive.preprocessors;
 /**
  * Created by Maciej Rudnicki on 06/02/2017.
  */
-public class RemoveExclationMarksTokenizerPreprocessor implements TokenizerPreprocessor {
+public class RemoveExclationMarksTokenizer implements Tokenizer {
 
     @Override
-    public String tokenize(String sentence) {
+    public String process(String sentence) {
         return sentence.replaceAll("!"," ");
     }
 }

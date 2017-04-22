@@ -26,12 +26,11 @@ public class LanguageTest extends TestAbstract {
         data.putAll(prepareData(LanguageClassifier.ENGLISH, "/datasets/language-recognition/eng"));
         data.putAll(prepareData(LanguageClassifier.POLISH, "/datasets/language-recognition/pl"));
 
-        dataset = prepareDataset(LanguageClassifier.class);
+        dataset = prepareDataset(LanguageClassifier.class, data);
 
         engine = prepareEngine(dataset)
-                .debugMode(true);
+                ;
 
-        dataset.train(data);
     }
 
 

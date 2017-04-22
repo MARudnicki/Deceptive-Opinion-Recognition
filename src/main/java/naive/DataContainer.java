@@ -2,7 +2,7 @@ package naive;
 
 import com.google.common.base.Preconditions;
 import naive.ngrams.NGramsSplitter;
-import naive.preprocessors.TokenizerPreprocessor;
+import naive.preprocessors.Tokenizer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,10 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
+
 /**
  * Created by Maciej Rudnicki on 01/02/2017.
  */
-public class DataSet<T extends Enum> {
+public class DataContainer<T extends Enum> {
 
     private Map<String, Map<Enum, Integer>> dataSet = new HashMap<>();
 
@@ -30,33 +32,21 @@ public class DataSet<T extends Enum> {
 
     private Class<T> classifier;
 
-    private List<TokenizerPreprocessor> tokenizerPreprocessors;
+    private List<Tokenizer> tokenizers;
 
     private NGramsSplitter nGramsSplitter;
 
-    public DataSet(DatasetBuilder builder) {
-        nGramsSplitter = builder.nGramsSplitterBuilder;
+    public DataContainer(DatasetBuilder builder) {
+
         classifierSizes = builder.classifierSizesBuilder;
         classifier = builder.classifierBuilder;
-        tokenizerPreprocessors = builder.preprocessorsBuilder;
+        tokenizers = builder.preprocessorsBuilder;
+        nGramsSplitter = builder.nGramsSplitter;
     }
 
     public void train(Map<URL, Enum> trainingSet) {
 
         trainingSet.forEach((k, v) -> addWords(processURL(k), v));
-    }
-
-
-    public Map<String, Map<Enum, Integer>> getDataSet() {
-        return dataSet;
-    }
-
-    public Map<Enum, Integer> getClassifierSizes() {
-        return classifierSizes;
-    }
-
-    public Class<T> getClassifier() {
-        return classifier;
     }
 
     private static String readSentence(URL url) {
@@ -73,23 +63,36 @@ public class DataSet<T extends Enum> {
         }
     }
 
-    public String tokenizationPreprocess(String sentence) {
-        for (TokenizerPreprocessor p : tokenizerPreprocessors) {
-            sentence = p.tokenize(sentence);
+    public String performTokenization(String sentence) {
+        for (Tokenizer p : tokenizers) {
+            sentence = p.process(sentence);
         }
         return sentence;
     }
 
-    public List<String> splitToTokensUsingNGramsSplitter(String sentence){
+    public List<String> performNGramsSplitter(String sentence){
         return nGramsSplitter.split(sentence);
+    }
+
+
+    public Map<String, Map<Enum, Integer>> getDataSet() {
+        return dataSet;
+    }
+
+    public Map<Enum, Integer> getClassifierSizes() {
+        return classifierSizes;
+    }
+
+    public Class<T> getClassifier() {
+        return classifier;
     }
 
     private Collection<String> processURL(URL url) {
         String sentence = readSentence(url);
 
-        sentence = tokenizationPreprocess(sentence);
+        sentence = performTokenization(sentence);
 
-        return splitToTokensUsingNGramsSplitter(sentence);
+        return performNGramsSplitter(sentence);
     }
 
     private void addWords(Collection<String> words, final Enum classifier) {
@@ -140,9 +143,9 @@ public class DataSet<T extends Enum> {
 
         private Class classifierBuilder;
 
-        private List<TokenizerPreprocessor> preprocessorsBuilder = new ArrayList<>();
+        private List<Tokenizer> preprocessorsBuilder = new ArrayList<>();
 
-        private NGramsSplitter nGramsSplitterBuilder;
+        private NGramsSplitter nGramsSplitter;
 
         public DatasetBuilder(Class enumClass) {
             this.classifierSizesBuilder = (Map<Enum, Integer>) EnumSet.allOf(enumClass)
@@ -154,20 +157,20 @@ public class DataSet<T extends Enum> {
             this.classifierBuilder = enumClass;
         }
 
-        public DatasetBuilder withTokenizer(TokenizerPreprocessor tokenizerPreprocessor) {
-            preprocessorsBuilder.add(tokenizerPreprocessor);
+        public DatasetBuilder tokenizer(Tokenizer tokenizer) {
+            preprocessorsBuilder.add(tokenizer);
             return this;
         }
 
-        public DatasetBuilder withNGramsSplitter(NGramsSplitter nGramsSplitter){
-            this.nGramsSplitterBuilder = nGramsSplitter;
+        public DatasetBuilder nGramsSplitter(NGramsSplitter nGramsSplitter){
+            this.nGramsSplitter = nGramsSplitter;
             return this;
         }
 
-        public DataSet build() {
-            Preconditions.checkState(nGramsSplitterBuilder !=null, "nGramsSplitterBuilder has to be declared");
+        public DataContainer build() {
+            Preconditions.checkState(nGramsSplitter != null, "NGramsSplitter has to be set");
 
-            return new DataSet(this);
+            return new DataContainer(this);
         }
     }
 }

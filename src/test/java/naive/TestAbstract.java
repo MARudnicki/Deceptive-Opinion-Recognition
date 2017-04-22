@@ -35,7 +35,7 @@ public class TestAbstract {
 
     protected static final int AMOUNT_OF_ITERATIONS_OF_TEST_RUN = 10;
 
-    protected DataSet dataset;
+    protected DataContainer dataset;
 
     protected NaiveBayesEngine engine;
 

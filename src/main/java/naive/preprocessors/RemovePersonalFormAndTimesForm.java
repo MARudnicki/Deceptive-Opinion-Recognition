@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 /**
  * Created by Maciej Rudnicki on 07/02/2017.
  */
-public class RemovePersonalFormAndTimesForm implements TokenizerPreprocessor {
+public class RemovePersonalFormAndTimesForm implements Tokenizer {
 
     private static final String SPACE = " ";
 
     @Override
-    public String tokenize(String sentence) {
+    public String process(String sentence) {
 
             Collection<String> words =  Arrays.stream(sentence.split(SPACE))
                     .map(String::trim)
