@@ -1,6 +1,6 @@
 package naive;
 
-import naive.preprocessors.Preprocessor;
+import naive.preprocessors.Tokenizer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,13 +30,13 @@ public class DataContainer<T extends Enum> {
 
     private Class<T> classifier;
 
-    private List<Preprocessor> preprocessors;
+    private List<Tokenizer> tokenizers;
 
     public DataContainer(DatasetBuilder builder) {
 
         classifierSizes = builder.classifierSizesBuilder;
         classifier = builder.classifierBuilder;
-        preprocessors = builder.preprocessorsBuilder;
+        tokenizers = builder.preprocessorsBuilder;
     }
 
     public void train(Map<URL, Enum> trainingSet) {
@@ -72,7 +72,7 @@ public class DataContainer<T extends Enum> {
     }
 
     public String preprocess(String sentence) {
-        for (Preprocessor p : preprocessors) {
+        for (Tokenizer p : tokenizers) {
             sentence = p.process(sentence);
         }
         return sentence;
@@ -134,7 +134,7 @@ public class DataContainer<T extends Enum> {
 
         private Class classifierBuilder;
 
-        private List<Preprocessor> preprocessorsBuilder = new ArrayList<>();
+        private List<Tokenizer> preprocessorsBuilder = new ArrayList<>();
 
         public DatasetBuilder(Class enumClass) {
             this.classifierSizesBuilder = (Map<Enum, Integer>) EnumSet.allOf(enumClass)
@@ -146,8 +146,8 @@ public class DataContainer<T extends Enum> {
             this.classifierBuilder = enumClass;
         }
 
-        public DatasetBuilder with(Preprocessor preprocessor) {
-            preprocessorsBuilder.add(preprocessor);
+        public DatasetBuilder withTokenizer(Tokenizer tokenizer) {
+            preprocessorsBuilder.add(tokenizer);
             return this;
         }
 

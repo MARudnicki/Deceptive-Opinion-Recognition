@@ -38,7 +38,7 @@ public class NaiveBayesEngine<T extends Enum> {
     }
 
     /**
-     * Examine sentence word after word with probabilities.
+     * Examine sentence word after word withTokenizer probabilities.
      *
      * @param sentence
      * @return predicted T

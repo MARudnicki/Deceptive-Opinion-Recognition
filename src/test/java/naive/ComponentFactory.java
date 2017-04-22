@@ -1,9 +1,8 @@
 package naive;
 
 import naive.kernels.ExponentialKernel;
-import naive.kernels.LogicalKernel;
-import naive.preprocessors.RemoveExclationMarksPreprocessor;
-import naive.preprocessors.RemoveSpecialCharsPreprocessor;
+import naive.preprocessors.RemoveExclationMarksTokenizer;
+import naive.preprocessors.RemoveSpecialCharsTokenizer;
 
 import java.net.URL;
 import java.util.Map;
@@ -16,12 +15,12 @@ public class ComponentFactory {
     /**
      * DataContainer
      * @param clazz Classifier type e.g. Language/Review/SpamClassfier
-     * @return DataContainer with Tokenization pre-processing
+     * @return DataContainer withTokenizer Tokenization pre-processing
      */
     public static DataContainer prepareDataset(Class clazz, Map<URL, Enum> data) {
         DataContainer dataContainer =  new DataContainer.DatasetBuilder(clazz)
-                .with(new RemoveExclationMarksPreprocessor())
-                .with(new RemoveSpecialCharsPreprocessor())
+                .withTokenizer(new RemoveExclationMarksTokenizer())
+                .withTokenizer(new RemoveSpecialCharsTokenizer())
                 .build();
         dataContainer.train(data);
 
@@ -30,7 +29,7 @@ public class ComponentFactory {
 
     /**
      * NaiveBayesEngine
-     * @param dataset with training data & pre-processing configuration
+     * @param dataset withTokenizer training data & pre-processing configuration
      * @return engine to predict class of classifier of study test
      */
     public static NaiveBayesEngine prepareEngine(DataContainer dataset) {

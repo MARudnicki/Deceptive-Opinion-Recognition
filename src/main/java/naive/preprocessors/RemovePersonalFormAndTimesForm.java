@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Maciej Rudnicki on 07/02/2017.
  */
-public class RemovePersonalFormAndTimesForm implements Preprocessor {
+public class RemovePersonalFormAndTimesForm implements Tokenizer {
 
     private static final String SPACE = " ";
 
